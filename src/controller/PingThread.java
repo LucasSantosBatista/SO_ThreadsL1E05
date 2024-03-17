@@ -1,6 +1,3 @@
-/**
- * 
- */
 package controller;
 
 import java.io.BufferedReader;
@@ -19,31 +16,42 @@ public class PingThread extends Thread {
 
 	public void run() {
 		String os = System.getProperty("os.name");
-		if (os == "Linux") {
+		if (os.contains("Linux")) {
 			String comando = "ping -4 -c 10 " + server;
+
 			try {
 				Process process = Runtime.getRuntime().exec(comando);
-				
+
 				BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-				
-				String linha = reader.readLine();
-				while (linha != null) {
-					System.out.println(server + ": " + linha);
-					linha = reader.readLine();
+
+				String linha;
+				double avgTime = 0;
+
+				while ((linha = reader.readLine()) != null) {
+					String[] partes = linha.split(" ");
+					for (String parte : partes) {
+						if (parte.contains("time=")) {
+							System.out.println(server + ": " + parte);
+
+						}
+						if (linha.contains("avg")) {
+							String[] parts = linha.split("/");
+							if (parts.length > 4) {
+								avgTime = Double.parseDouble(parts[4]);
+								System.out.println(server + " - Tempo médio: " + avgTime + "ms");
+								break; // Saindo do loop assim que o tempo médio é encontrado
+							}
+						}
+
+					}
 				}
-				
+
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			
-			
-			
-			
-			
-			
+
 		} else {
 			System.out.println("Sistema Operacional não Linux!");
 		}
-		
 	}
 }
